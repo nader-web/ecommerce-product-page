@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Dynamic Padding with Clamp Logic</title>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				background-color: #f4f4f4;
+				margin: 0;
+				padding: 20px;
+			}
+			h1 {
+				text-align: center;
+				color: #333;
+			}
+			.container {
+				max-width: 400px;
+				margin: 0 auto;
+				background: white;
+				padding: 20px;
+				border-radius: 8px;
+				box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+			}
+			label {
+				display: block;
+				margin: 10px 0 5px;
+				color: #555;
+			}
+			input[type="number"] {
+				width: 100%;
+				padding: 10px;
+				border: 1px solid #ccc;
+				border-radius: 4px;
+				box-sizing: border-box;
+				margin-bottom: 10px;
+			}
+			button {
+				width: 100%;
+				padding: 10px;
+				background-color: #5a67d8;
+				border: none;
+				border-radius: 4px;
+				color: white;
+				font-size: 16px;
+				cursor: pointer;
+				margin-top: 10px;
+			}
+			button:hover {
+				background-color: #4c51bf;
+			}
+			#result {
+				margin-top: 20px;
+				font-weight: bold;
+				text-align: center;
+				color: #333;
+			}
+			.result-item {
+				margin: 5px 0;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Dynamic Padding with Clamp Logic</h1>
+		<div class="container">
+			<div>
+				<label for="minPadding">Min Padding (px):</label>
+				<input type="number" id="minPadding" step="1" value="10" required />
+			</div>
+			<div>
+				<label for="maxPadding">Max Padding (px):</label>
+				<input type="number" id="maxPadding" step="1" value="50" required />
+			</div>
+			<button onclick="calculateForAllScreens()">Calculate Padding</button>
+			<div id="result"></div>
+		</div>
+
+		<script>
+			// Predefined screen sizes
+			const screenSizes = [
+				{ value: "sm", label: "sm (640px)", pixels: 640 },
+				{ value: "md", label: "md (768px)", pixels: 768 },
+				{ value: "lg", label: "lg (1024px)", pixels: 1024 },
+				{ value: "xl", label: "xl (1280px)", pixels: 1280 },
+				{ value: "2xl", label: "2xl (1440px)", pixels: 1440 }, // Added 1440px
+			];
+
+			// Tailwind padding classes for reference (rem values)
+			const tailwindPaddingClasses = {
+				0.25: "p-1", // 0.25rem
+				0.5: "p-2", // 0.5rem
+				0.75: "p-3", // 0.75rem
+				1: "p-4", // 1rem
+				1.25: "p-5", // 1.25rem
+				1.5: "p-6", // 1.5rem
+				2: "p-8", // 2rem
+			};
+
+			// Function to find the closest Tailwind class based on rem value
+			function mapToTailwindClass(remValue) {
+				const rems = Object.keys(tailwindPaddingClasses);
+				let closestRem = rems.reduce((prev, curr) =>
+					Math.abs(curr - remValue) < Math.abs(prev - remValue) ? curr : prev
+				);
+				return tailwindPaddingClasses[closestRem];
+			}
+
+			// Function to calculate padding in rem
+			function calculateDynamicPadding(
+				minValue,
+				maxValue,
+				screenSize,
+				minScreenSize,
+				maxScreenSize
+			) {
+				if (screenSize < minScreenSize || screenSize > maxScreenSize)
+					return minValue; // Ensure screen size is within bounds
+				const scaleFactor =
+					(screenSize - minScreenSize) / (maxScreenSize - minScreenSize);
+				const dynamicPadding = minValue + scaleFactor * (maxValue - minValue);
+				const dynamicPaddingRem = (dynamicPadding / 16).toFixed(2); // Convert pixels to rem
+				return dynamicPaddingRem;
+			}
+
+			function calculateForAllScreens() {
+				const minPadding = parseFloat(
+					document.getElementById("minPadding").value
+				);
+				const maxPadding = parseFloat(
+					document.getElementById("maxPadding").value
+				);
+
+				// Validation for positive padding values and logical min/max padding relationship
+				if (
+					isNaN(minPadding) ||
+					isNaN(maxPadding) ||
+					minPadding < 0 ||
+					maxPadding < 0 ||
+					minPadding > maxPadding
+				) {
+					document.getElementById("result").innerHTML =
+						"Error: Please provide valid padding values (min <= max and both >= 0).";
+					return;
+				}
+
+				const minScreenSize = Math.min(
+					...screenSizes.map((size) => size.pixels)
+				);
+				const maxScreenSize = Math.max(
+					...screenSizes.map((size) => size.pixels)
+				);
+
+				const resultContainer = document.getElementById("result");
+				resultContainer.innerHTML = ""; // Clear previous results
+
+				try {
+					let tailwindClasses = "";
+					screenSizes.forEach((screen) => {
+						const dynamicPaddingRem = calculateDynamicPadding(
+							minPadding,
+							maxPadding,
+							screen.pixels,
+							minScreenSize,
+							maxScreenSize
+						);
+
+						// Find the closest Tailwind class for the new padding
+						const tailwindClass = mapToTailwindClass(dynamicPaddingRem);
+
+						// Append result to the result container
+						resultContainer.innerHTML += `<div class="result-item">For ${screen.label}: Padding = ${dynamicPaddingRem} rem (Tailwind class: ${tailwindClass})</div>`;
+						tailwindClasses += `${screen.value}:${tailwindClass} `;
+					});
+
+					// Display Tailwind CSS classes
+					resultContainer.innerHTML += `<div class="result-item"><strong>Generated Tailwind CSS:</strong><pre>${tailwindClasses.trim()}</pre></div>`;
+				} catch (error) {
+					resultContainer.innerHTML = `Error: ${error.message}`;
+				}
+			}
+		</script>
+	</body>
+</html>

@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Responsive Size Calculator with Tailwind Classes</title>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				padding: 20px;
+				background-color: #fafafa;
+				color: #333;
+				text-align: center;
+				background-image: linear-gradient(to bottom, #fafafa, #f5f5f5);
+			}
+			label,
+			input {
+				display: block;
+				margin-bottom: 10px;
+				width: 100%;
+				padding: 10px;
+				border: 1px solid #ccc;
+				border-radius: 4px;
+				box-sizing: border-box;
+				box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+			}
+			label {
+				font-weight: bold;
+				color: #666;
+			}
+			input {
+				background-color: #fff;
+				color: #333;
+			}
+			#result {
+				margin-top: 20px;
+				padding: 20px;
+				background-color: #f4f4f4;
+				border: 1px solid #ddd;
+				border-radius: 4px;
+				box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+			}
+			button {
+				background-color: #4caf50;
+				color: #fff;
+				padding: 10px 20px;
+				border: none;
+				border-radius: 4px;
+				cursor: pointer;
+			}
+			button:hover {
+				background-color: #3e8e41;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Responsive Size Calculator with Tailwind Classes</h1>
+		<form id="form" onsubmit="calculateForAllScreens()"></form>
+		<label for="calcType">Select Calculation Type:</label>
+		<select id="calcType">
+			<option value="width">Width</option>
+			<option value="height">Height</option>
+		</select>
+
+		<label for="minSize">Size at 375px (min):</label>
+		<input type="number" id="minSize" placeholder="Enter size at 375px" />
+
+		<label for="maxSize">Size at 1440px (max):</label>
+		<input type="number" id="maxSize" placeholder="Enter size at 1440px" />
+
+		<button onclick="calculateForAllScreens()">Calculate Sizes</button>
+
+		<div id="result"></div>
+
+		<script>
+			// Predefined screen sizes (Tailwind breakpoints)
+			const screenSizes = [
+				{ value: "xs", label: "xs (375px)", pixels: 375 },
+				{ value: "sm", label: "sm (640px)", pixels: 640 },
+				{ value: "md", label: "md (768px)", pixels: 768 },
+				{ value: "lg", label: "lg (1024px)", pixels: 1024 },
+				{ value: "xl", label: "xl (1280px)", pixels: 1280 },
+				{ value: "2xl", label: "2xl (1440px)", pixels: 1440 },
+			];
+
+			// Tailwind size classes for width and height (in rem values)
+			const tailwindWidthClasses = {
+				0.25: "w-1", // 0.25rem
+				0.5: "w-2", // 0.5rem
+				1: "w-4", // 1rem
+				1.5: "w-6", // 1.5rem
+				2: "w-8", // 2rem
+				2.5: "w-10", // 2.5rem
+				3: "w-12", // 3rem
+				3.5: "w-14", // 3.5rem
+				4: "w-16", // 4rem
+				5: "w-20", // 5rem
+				6: "w-24", // 6rem
+				7: "w-28", // 7rem
+				8: "w-32", // 8rem
+				9: "w-36", // 9rem
+				10: "w-40", // 10rem
+				11: "w-44", // 11rem
+				12: "w-48", // 12rem
+				13: "w-52", // 13rem
+				14: "w-56", // 14rem
+				15: "w-60", // 15rem
+				16: "w-64", // 16rem
+				18: "w-72", // 18rem
+				20: "w-80", // 20rem
+				24: "w-96", // 24rem
+				full: "w-full", // Full width
+				screen: "w-screen", // 100vw
+			};
+
+			const tailwindHeightClasses = {
+				0.25: "h-1", // 0.25rem
+				0.5: "h-2", // 0.5rem
+				1: "h-4", // 1rem
+				1.5: "h-6", // 1.5rem
+				2: "h-8", // 2rem
+				2.5: "h-10", // 2.5rem
+				3: "h-12", // 3rem
+				3.5: "h-14", // 3.5rem
+				4: "h-16", // 4rem
+				5: "h-20", // 5rem
+				6: "h-24", // 6rem
+				7: "h-28", // 7rem
+				8: "h-32", // 8rem
+				9: "h-36", // 9rem
+				10: "h-40", // 10rem
+				11: "h-44", // 11rem
+				12: "h-48", // 12rem
+				13: "h-52", // 13rem
+				14: "h-56", // 14rem
+				15: "h-60", // 15rem
+				16: "h-64", // 16rem
+				18: "h-72", // 18rem
+				20: "h-80", // 20rem
+				24: "h-96", // 24rem
+				full: "h-full", // Full height
+				screen: "h-screen", // 100vh
+			};
+
+			// Function to calculate the dynamic size based on clamp logic
+			function calculateDynamicSize(
+				minValue,
+				maxValue,
+				screenSize,
+				minScreenSize,
+				maxScreenSize
+			) {
+				if (screenSize < minScreenSize || screenSize > maxScreenSize)
+					return minValue; // Ensure screen size is within bounds
+				const scaleFactor =
+					(screenSize - minScreenSize) / (maxScreenSize - minScreenSize);
+				const dynamicSize = minValue + scaleFactor * (maxValue - minValue);
+				return (dynamicSize / 16).toFixed(2); // Convert pixels to rem
+			}
+
+			// Function to map calculated size in rem to the closest Tailwind class (width or height)
+			function mapToTailwindClass(remValue, calcType, screenSize) {
+				const sizeClasses =
+					calcType === "width" ? tailwindWidthClasses : tailwindHeightClasses;
+				const rems = Object.keys(sizeClasses);
+				let closestRem = rems.reduce((prev, curr) =>
+					Math.abs(curr - remValue) < Math.abs(prev - remValue) ? curr : prev
+				);
+
+				if (remValue * 16 >= screenSize) {
+					return calcType === "width" ? "w-full" : "h-full";
+				}
+
+				// If the calculated size is greater than 24rem, return a custom class with the exact pixel value
+				if (remValue > 24) {
+					return `${calcType === "width" ? "w" : "h"}-[${Math.round(remValue * 16)}px]`;
+				}
+
+				return sizeClasses[closestRem];
+			}
+
+			// Calculate for all predefined screen sizes
+			function calculateForAllScreens() {
+				const minSize = parseFloat(document.getElementById("minSize").value);
+				const maxSize = parseFloat(document.getElementById("maxSize").value);
+				const calcType = document.getElementById("calcType").value; // Either 'width' or 'height'
+
+				// Validation for positive size values and logical min/max size relationship
+				if (
+					isNaN(minSize) ||
+					isNaN(maxSize) ||
+					minSize < 0 ||
+					maxSize < 0 ||
+					minSize > maxSize
+				) {
+					document.getElementById("result").innerHTML =
+						"Error: Please provide valid size values (min <= max and both >= 0).";
+					return;
+				}
+
+				const minScreenSize = Math.min(
+					...screenSizes.map((size) => size.pixels)
+				);
+				const maxScreenSize = Math.max(
+					...screenSizes.map((size) => size.pixels)
+				);
+
+				const resultContainer = document.getElementById("result");
+				resultContainer.innerHTML = ""; // Clear previous results
+
+				try {
+					let tailwindClasses = "";
+					screenSizes.forEach((screen) => {
+						const dynamicSizeRem = calculateDynamicSize(
+							minSize,
+							maxSize,
+							screen.pixels,
+							minScreenSize,
+							maxScreenSize
+						);
+
+						const tailwindClass = mapToTailwindClass(
+							dynamicSizeRem,
+							calcType,
+							screen.pixels
+						);
+
+						// Append result to the result container
+						resultContainer.innerHTML += `<div class="result-item">For ${screen.label}: Size = ${dynamicSizeRem}rem (${tailwindClass})</div>`;
+						tailwindClasses += `${screen.value}:${tailwindClass} `;
+					});
+
+					// Display Tailwind CSS classes
+					resultContainer.innerHTML += `<div class="result-item"><strong>Generated Tailwind CSS:</strong><pre>${tailwindClasses.trim()}</pre></div>`;
+				} catch (error) {
+					resultContainer.innerHTML = `Error: ${error.message}`;
+				}
+			}
+		</script>
+	</body>
+</html>

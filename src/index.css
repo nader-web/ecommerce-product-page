@@ -1,11 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-#root {
-    max-width: 1440px;
-    margin: 0 auto;
-    height: fit-content;
-    padding: 0;
-    text-align: center;
+* ,
+*::before,
+*::after {
+    box-sizing: border-box;
+    /* background-color: hsl(0, 96%, 50%, 0.1); */
+    /* outline:  1px solid hsl(0, 96%, 50%, 0.5); */
+}
+html,body,#root {
+    min-height: 100dvh;
+    min-width: 100vw;
 }

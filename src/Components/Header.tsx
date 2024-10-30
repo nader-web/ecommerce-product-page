@@ -13,7 +13,7 @@ const Header = () => {
 	const renderMenuItems = () => {
 		return menuItems.map((item, index) => {
 			return (
-				<li key={index}>
+				<li key={index} className="py-2 ">
 					<a href={item.href}>{item.name}</a>
 				</li>
 			);
@@ -21,8 +21,9 @@ const Header = () => {
 	};
 
 	return (
-		<header className="bg-white flex  justify-between items-center text-primary text-sm md:text-base h-16 px-4 md:px-8 lg:px-16 grid-cols-[auto_1fr_auto_auto] gap-5 md:gap-8 lg:gap-10">
-			<div className="navbar sm:hidden flex items-center gap-6 justify-end">
+		<header className="bg-white flex justify-between items-center sm:flex-row gap-5 md:gap-8 lg:gap-10 h-16 px-4 md:px-8 lg:px-16">
+			
+			<div className="navbar flex md:hidden  items-center gap-6 justify-end">
 				<button
 					className="menu-button w-4 h-4 flex justify-center items-center flex-shrink-0"
 					aria-label="Toggle navigation"
@@ -46,27 +47,25 @@ const Header = () => {
 						{renderMenuItems()}
 					</ul>
 				</div>
-		
-
-			</div>
-			<div className="logo flex-1">
+			</div><div className="logo flex-1 md:flex-initial ">
 				<img src="../images/logo.svg" alt="logo" />
 			</div>
-			<nav className="navbar hidden sm:flex items-center gap-6">
-				<ul className="flex gap-6">
-					<li>
+
+			<nav className="navbar hidden md:flex md items-center gap-6 h-full">
+				<ul className="flex gap-6 items-center h-full">
+					<li className="h-full content-center hover:border-b-2 hover:border-b-orange-500">
 						<a href="#">Collection</a>
 					</li>
-					<li>
+					<li className="h-full content-center hover:border-b-2 hover:border-b-orange-500">
 						<a href="#">Men</a>
 					</li>
-					<li>
+					<li className="h-full content-center hover:border-b-2 hover:border-b-orange-500">
 						<a href="#">Women</a>
 					</li>
-					<li>
+					<li className="h-full content-center hover:border-b-2 hover:border-b-orange-500">
 						<a href="#">About</a>
 					</li>
-					<li>
+					<li className="h-full content-center hover:border-b-2 hover:border-b-orange-500">
 						<a href="#">Contact</a>
 					</li>
 				</ul>
@@ -85,4 +84,3 @@ const Header = () => {
 };
 
 export default Header;
-// MainSection
